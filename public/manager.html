@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Burger Singh CAS — Operations Center</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">BS</div>
+      <div>
+        <div class="sidebar-brand-name">Burger Singh</div>
+        <div class="sidebar-brand-sub">Operations Center</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Analytics</div>
+      <button class="nav-item active" data-section="overview">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </button>
+      <button class="nav-item" data-section="branches">
+        <span class="nav-icon">🏢</span><span>Branch Analytics</span>
+      </button>
+      <button class="nav-item" data-section="regional">
+        <span class="nav-icon">🗺️</span><span>Regional Intelligence</span>
+      </button>
+      <button class="nav-item" data-section="rankings">
+        <span class="nav-icon">🏆</span><span>Franchise Rankings</span>
+      </button>
+
+      <div class="sidebar-section-label">People</div>
+      <button class="nav-item" data-section="leaderboard">
+        <span class="nav-icon">👑</span><span>Leaderboard</span>
+      </button>
+      <button class="nav-item" data-section="training">
+        <span class="nav-icon">🎓</span><span>Training Insights</span>
+      </button>
+
+      <div class="sidebar-section-label">Insights</div>
+      <button class="nav-item" data-section="language">
+        <span class="nav-icon">🌐</span><span>Language Analytics</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">—</div>
+        <div>
+          <div class="user-name-text" id="user-name">Loading...</div>
+          <div class="user-role-text">Manager</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logout-btn">⬤ Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Overview</div>
+      <div class="topbar-right">
+        <span class="badge badge-brand">Manager View</span>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <section class="content-section active" id="section-overview">
+        <p class="section-subtitle">Chain-wide performance summary</p>
+        <div class="stat-grid" id="overview-stat-grid">
+          <div class="stat-card"><div class="stat-icon blue">💬</div><div class="stat-info"><div class="stat-label">Total Conversations</div><div class="stat-value" id="ov-total">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon red">⭐</div><div class="stat-info"><div class="stat-label">Chain Average Score</div><div class="stat-value" id="ov-avg">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon green">🏆</div><div class="stat-info"><div class="stat-label">Top Employee</div><div class="stat-value" id="ov-best" style="font-size:16px;">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange">📍</div><div class="stat-info"><div class="stat-label">Needs Attention</div><div class="stat-value" id="ov-low" style="font-size:16px;">—</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Top Common Recommendations</h3></div>
+          <div class="card-body" id="ov-recs"></div>
+        </div>
+      </section>
+
+      <!-- BRANCH ANALYTICS -->
+      <section class="content-section" id="section-branches">
+        <p class="section-subtitle">Performance comparison across all branches</p>
+        <div class="card">
+          <div class="card-header"><h3>Branch Comparison</h3></div>
+          <div id="branch-table-wrap"></div>
+        </div>
+      </section>
+
+      <!-- REGIONAL INTELLIGENCE -->
+      <section class="content-section" id="section-regional">
+        <p class="section-subtitle">Regional performance and customer behaviour analytics</p>
+        <div class="card mb-24">
+          <div class="card-header"><h3>Regional Overview</h3></div>
+          <div id="regional-overview-wrap"></div>
+        </div>
+
+        <div class="card mb-24">
+          <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+            <h3>Region Deep Dive</h3>
+            <select class="form-select" id="region-select" style="min-width:160px;"></select>
+          </div>
+          <div class="grid-2" style="padding:20px;gap:20px;" id="region-deepdive">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px;">Customer Behaviour</div>
+              <div id="region-behaviour"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px;">Sales Analytics</div>
+              <div id="region-sales"></div>
+            </div>
+          </div>
+          <div style="padding:0 20px 20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px;">Language Distribution</div>
+            <div id="region-language"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+            <h3>AI Regional Intelligence Report</h3>
+            <button class="btn btn-primary btn-sm" id="gen-insights-btn">Generate Insights</button>
+          </div>
+          <div class="card-body" id="regional-insights-body">
+            <p class="text-muted text-sm">Select a region above and click "Generate Insights" for an AI-powered analysis.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FRANCHISE RANKINGS -->
+      <section class="content-section" id="section-rankings">
+        <p class="section-subtitle">Branch ranking by average conversation quality score</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h3>🥇 Top Performing Branches</h3>
+            </div>
+            <div id="top-branches-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>⚠️ Needs Improvement</h3>
+            </div>
+            <div id="low-branches-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section class="content-section" id="section-leaderboard">
+        <p class="section-subtitle">Employee performance ranking across the chain</p>
+        <div class="card">
+          <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+            <h3>Employee Leaderboard</h3>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm active-lb" id="lb-company-btn">Company-Wide</button>
+              <select class="form-select" id="lb-branch-select" style="font-size:13px;"></select>
+            </div>
+          </div>
+          <div id="leaderboard-content"></div>
+        </div>
+      </section>
+
+      <!-- TRAINING INSIGHTS -->
+      <section class="content-section" id="section-training">
+        <p class="section-subtitle">Identify coaching opportunities across branches</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Most Common Recommendations</h3></div>
+            <div class="card-body" id="training-recs"></div>
+          </div>
+          <div class="card">
+            <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+              <h3>Branch Insights</h3>
+              <select class="form-select" id="insights-branch-select" style="font-size:13px;"></select>
+            </div>
+            <div class="card-body" id="branch-insights-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LANGUAGE ANALYTICS -->
+      <section class="content-section" id="section-language">
+        <p class="section-subtitle">Language usage across all branches and regions</p>
+        <div class="card">
+          <div class="card-header"><h3>Chain-Wide Language Distribution</h3></div>
+          <div id="language-table-wrap"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="manager.js"></script>
+</body>
+</html>
