@@ -8,7 +8,7 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Updated to gemini-2.0-flash for stronger multilingual support
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 
 const SUPPORTED_LANGUAGES = ["English", "Hindi", "Bengali", "Assamese", "Nepali", "Mixed"];
 
