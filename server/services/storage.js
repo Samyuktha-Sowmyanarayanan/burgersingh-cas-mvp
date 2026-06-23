@@ -430,7 +430,7 @@ Return ONLY a valid JSON object with no markdown, no code fences:
 
   try {
     const genAIClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAIClient.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAIClient.getGenerativeModel({ model: "gemini-3.5-flash" });
     const result = await model.generateContent(prompt);
 
     let responseText = result.response.text()
