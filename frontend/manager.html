@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Burger Singh— Operations</title>
+  <link rel="icon" type="image/png" href="logo.png"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="logo.png" alt="" class="sidebar-logo-img"/>
+      <div class="sidebar-brand-text">
+        <div class="sidebar-brand-name">Burger Singh</div>
+        <div class="sidebar-brand-sub">Operations Center</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Analytics</div>
+      <button class="nav-item active" data-section="overview">
+        <i data-lucide="layout-dashboard"></i><span>Overview</span>
+      </button>
+      <button class="nav-item" data-section="branches">
+        <i data-lucide="building-2"></i><span>Branch Analytics</span>
+      </button>
+      <button class="nav-item" data-section="regional">
+        <i data-lucide="map"></i><span>Regional Intelligence</span>
+      </button>
+      <button class="nav-item" data-section="rankings">
+        <i data-lucide="trophy"></i><span>Franchise Rankings</span>
+      </button>
+
+      <div class="sidebar-section-label">People</div>
+      <button class="nav-item" data-section="leaderboard">
+        <i data-lucide="users"></i><span>Leaderboard</span>
+      </button>
+      <button class="nav-item" data-section="training">
+        <i data-lucide="book-open"></i><span>Training Insights</span>
+      </button>
+
+      <div class="sidebar-section-label">Intelligence</div>
+      <button class="nav-item" data-section="language">
+        <i data-lucide="globe"></i><span>Language Analytics</span>
+      </button>
+
+      <div class="sidebar-section-label">Operations</div>
+      <button class="nav-item" data-section="live-ops">
+        <i data-lucide="activity"></i><span>Live Operations</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">—</div>
+        <div style="min-width:0;">
+          <div class="user-name-text" id="user-name">Loading...</div>
+          <div class="user-role-text">Manager</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logout-btn">
+        <i data-lucide="log-out"></i>Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="page-title">Overview</div>
+        <div class="topbar-breadcrumb">Operations Intelligence Center</div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications"><i data-lucide="bell"></i></button>
+        <span class="badge badge-brand">Manager</span>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <section class="content-section active" id="section-overview">
+        <p class="section-subtitle">Chain-wide performance summary</p>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i data-lucide="message-square"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Total Conversations</div>
+              <div class="stat-value" id="ov-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i data-lucide="bar-chart-2"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Chain Average Score</div>
+              <div class="stat-value" id="ov-avg">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i data-lucide="award"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Top Employee</div>
+              <div class="stat-value" id="ov-best" style="font-size:14px;line-height:1.3;">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i data-lucide="alert-triangle"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Needs Attention</div>
+              <div class="stat-value" id="ov-low" style="font-size:14px;line-height:1.3;">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Most Common Recommendations</h3></div>
+          <div class="card-body" id="ov-recs"></div>
+        </div>
+      </section>
+
+      <!-- BRANCH ANALYTICS -->
+      <section class="content-section" id="section-branches">
+        <p class="section-subtitle">Performance comparison across all branches</p>
+        <div class="card">
+          <div class="card-header"><h3>Branch Comparison</h3></div>
+          <div id="branch-table-wrap"></div>
+        </div>
+      </section>
+
+      <!-- REGIONAL INTELLIGENCE -->
+      <section class="content-section" id="section-regional">
+        <p class="section-subtitle">Regional performance and customer behaviour analytics</p>
+        <div class="card mb-20">
+          <div class="card-header"><h3>Regional Overview</h3></div>
+          <div id="regional-overview-wrap"></div>
+        </div>
+        <div class="card mb-20">
+          <div class="card-header">
+            <h3>Region Deep Dive</h3>
+            <select class="form-select" id="region-select" style="min-width:150px;"></select>
+          </div>
+          <div class="regional-columns" style="padding:16px;">
+            <div>
+              <div class="regional-columns h3">Customer Behaviour</div>
+              <div id="region-behaviour"></div>
+            </div>
+            <div>
+              <div class="regional-columns h3">Sales Analytics</div>
+              <div id="region-sales"></div>
+            </div>
+          </div>
+          <div style="padding:0 16px 16px;">
+            <div style="font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Language Distribution</div>
+            <div id="region-language"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>AI Regional Intelligence Report</h3>
+            <button class="btn btn-primary btn-sm" id="gen-insights-btn">Generate Insights</button>
+          </div>
+          <div class="card-body" id="regional-insights-body">
+            <p class="text-muted text-sm">Select a region above and click Generate Insights for an AI-powered analysis.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FRANCHISE RANKINGS -->
+      <section class="content-section" id="section-rankings">
+        <p class="section-subtitle">Branch ranking by average conversation quality score</p>
+        <div class="ranking-columns">
+          <div class="card">
+            <div class="card-header">
+              <h3>Top Performing Branches</h3>
+              <span class="badge badge-success">Ranked</span>
+            </div>
+            <div id="top-branches-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Needs Improvement</h3>
+              <span class="badge badge-warning">Review Required</span>
+            </div>
+            <div id="low-branches-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section class="content-section" id="section-leaderboard">
+        <p class="section-subtitle">Employee performance ranking across the chain</p>
+        <div class="card">
+          <div class="card-header">
+            <h3>Employee Leaderboard</h3>
+            <div class="leaderboard-controls">
+              <button class="btn btn-secondary btn-sm" id="lb-company-btn">Company-Wide</button>
+              <select class="form-select" id="lb-branch-select"></select>
+            </div>
+          </div>
+          <div id="leaderboard-content"></div>
+        </div>
+      </section>
+
+      <!-- TRAINING INSIGHTS -->
+      <section class="content-section" id="section-training">
+        <p class="section-subtitle">Coaching opportunities and branch-level development insights</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Most Common Recommendations</h3></div>
+            <div class="card-body" id="training-recs"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Branch Insights</h3>
+              <select class="form-select" id="insights-branch-select" style="font-size:12px;"></select>
+            </div>
+            <div class="card-body" id="branch-insights-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LANGUAGE ANALYTICS -->
+      <section class="content-section" id="section-language">
+        <p class="section-subtitle">Language usage distribution across all branches and regions</p>
+        <div class="card">
+          <div class="card-header"><h3>Chain-Wide Language Distribution</h3></div>
+          <div id="language-table-wrap"></div>
+        </div>
+      </section>
+
+      <!-- LIVE OPERATIONS -->
+      <section class="content-section" id="section-live-ops">
+        <p class="section-subtitle">Real-time view of active employee recording sessions</p>
+        <div class="live-ops-grid">
+          <div class="stat-card">
+            <div class="stat-icon red"><i data-lucide="activity"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Active Sessions</div>
+              <div class="stat-value" id="live-stat-active">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i data-lucide="calendar"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Sessions Today</div>
+              <div class="stat-value" id="live-stat-today">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i data-lucide="building-2"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Active Branches</div>
+              <div class="stat-value" id="live-stat-branches">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb-16">
+          <div class="card-header">
+            <h3>Active Sessions</h3>
+            <div class="refresh-indicator">
+              <i data-lucide="refresh-cw"></i>
+              <span id="live-refresh-label">Auto-refreshing every 10s</span>
+            </div>
+          </div>
+          <div id="live-active-sessions"></div>
+        </div>
+        <div class="card mb-16">
+          <div class="card-header"><h3>Active Sessions by Branch</h3></div>
+          <div id="live-branch-breakdown"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Recent Sessions</h3>
+            <span class="badge badge-gray">Last 30</span>
+          </div>
+          <div id="live-recent-sessions"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="manager.js"></script>
+</body>
+</html>

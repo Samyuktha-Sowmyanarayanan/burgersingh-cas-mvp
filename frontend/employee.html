@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Burger Singh — Employee</title>
+  <link rel="icon" type="image/png" href="logo.png"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="logo.png" alt="" class="sidebar-logo-img"/>
+      <div class="sidebar-brand-text">
+        <div class="sidebar-brand-name">Burger Singh</div>
+        <div class="sidebar-brand-sub">Employee Portal</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Workspace</div>
+      <button class="nav-item active" data-section="overview">
+        <i data-lucide="layout-dashboard"></i><span>Overview</span>
+      </button>
+      <button class="nav-item" data-section="upload">
+        <i data-lucide="upload-cloud"></i><span>Upload Conversation</span>
+      </button>
+      <button class="nav-item" data-section="live">
+        <i data-lucide="radio"></i><span>Live Session</span>
+      </button>
+
+      <div class="sidebar-section-label">My Performance</div>
+      <button class="nav-item" data-section="history">
+        <i data-lucide="clock"></i><span>History</span>
+      </button>
+      <button class="nav-item" data-section="trends">
+        <i data-lucide="trending-up"></i><span>Trends</span>
+      </button>
+      <button class="nav-item" data-section="recommendations">
+        <i data-lucide="lightbulb"></i><span>Recommendations</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">—</div>
+        <div style="min-width:0;">
+          <div class="user-name-text" id="user-name">Loading...</div>
+          <div class="user-role-text">Employee</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logout-btn">
+        <i data-lucide="log-out"></i>Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="page-title">Overview</div>
+        <div class="topbar-breadcrumb">Burger Singh CAS</div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications"><i data-lucide="bell"></i></button>
+        <div class="topbar-badge">
+          <i data-lucide="user"></i>
+          <span id="topbar-user-id">—</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <section class="content-section active" id="section-overview">
+        <p class="section-subtitle">Your performance at a glance</p>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Total Conversations</div>
+              <div class="stat-value" id="stat-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i data-lucide="bar-chart-2"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Average Score</div>
+              <div class="stat-value" id="stat-avg">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i data-lucide="trending-up"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Last Score</div>
+              <div class="stat-value" id="stat-last">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i data-lucide="calendar"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">This Week</div>
+              <div class="stat-value" id="stat-week">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Recent Conversations</h3></div>
+            <div id="overview-recent"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Latest Recommendations</h3></div>
+            <div class="card-body" id="overview-recs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- UPLOAD -->
+      <section class="content-section" id="section-upload">
+        <p class="section-subtitle">Upload a recorded customer conversation for AI analysis</p>
+        <div class="grid-2" style="align-items:start;">
+          <div class="card">
+            <div class="card-header"><h3>Upload Audio File</h3></div>
+            <div class="card-body">
+              <input type="file" id="audio-input" accept="audio/*"
+                style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"/>
+              <div class="upload-zone" id="upload-zone">
+                <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
+                <div class="upload-label" id="upload-label-text">Click to choose an audio file</div>
+                <div class="upload-sub">Supports .mp3, .wav, .m4a &nbsp;&middot;&nbsp; Max 25 MB</div>
+              </div>
+              <div id="upload-feedback"></div>
+              <button class="btn btn-primary btn-full" id="analyze-btn" style="margin-top:12px;">
+                Analyze Conversation
+              </button>
+            </div>
+          </div>
+          <div id="result-container" class="hidden">
+            <div id="scorecard-wrap"></div>
+            <div class="card" style="margin-top:12px;">
+              <div class="card-header"><h3>Recommendations</h3></div>
+              <div class="card-body"><div class="recs-list" id="result-recs"></div></div>
+            </div>
+            <div class="card" style="margin-top:12px;">
+              <div class="card-header">
+                <h3>Transcript</h3>
+                <span id="result-lang-badge"></span>
+              </div>
+              <div class="card-body">
+                <div class="transcript-box" id="result-transcript"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE SESSION -->
+      <section class="content-section" id="section-live">
+        <p class="section-subtitle">Record a live customer conversation and receive instant AI analysis</p>
+        <div class="grid-2" style="align-items:start;">
+          <div>
+            <div class="live-session-card" id="live-session-card">
+              <div class="live-session-header">
+                <div class="live-status-row">
+                  <div class="rec-dot" id="rec-dot"></div>
+                  <span class="live-status-label" id="live-status-label">Ready to Record</span>
+                </div>
+                <div class="live-timer" id="live-timer">00:00</div>
+              </div>
+              <div class="waveform" id="waveform">
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+                <div class="waveform-bar" style="height:3px;"></div>
+              </div>
+              <div class="duration-warning hidden" id="duration-warning">
+                <i data-lucide="alert-triangle"></i>
+                Session is very short. Recommend at least 15 seconds for accurate analysis.
+              </div>
+              <div class="session-meta hidden" id="session-meta">
+                <div class="session-meta-chip">
+                  <i data-lucide="hash"></i>
+                  <span id="chip-session-id">—</span>
+                </div>
+                <div class="session-meta-chip">
+                  <i data-lucide="user"></i>
+                  <span id="chip-employee"></span>
+                </div>
+                <div class="session-meta-chip">
+                  <i data-lucide="building-2"></i>
+                  <span id="chip-branch">—</span>
+                </div>
+              </div>
+              <div class="live-controls">
+                <button class="btn btn-primary" id="btn-start-recording">
+                  <i data-lucide="mic"></i>Start Recording
+                </button>
+                <button class="btn btn-secondary hidden" id="btn-pause-recording">
+                  <i data-lucide="pause"></i>Pause
+                </button>
+                <button class="btn btn-secondary hidden" id="btn-resume-recording">
+                  <i data-lucide="play"></i>Resume
+                </button>
+                <button class="btn btn-danger hidden" id="btn-stop-recording">
+                  <i data-lucide="square"></i>Stop &amp; Analyze
+                </button>
+                <button class="btn btn-ghost hidden" id="btn-cancel-recording">Cancel</button>
+              </div>
+            </div>
+            <div id="live-feedback"></div>
+          </div>
+
+          <div id="live-result-container" class="hidden">
+            <div id="live-scorecard-wrap"></div>
+            <div class="card" style="margin-top:12px;">
+              <div class="card-header"><h3>Recommendations</h3></div>
+              <div class="card-body"><div class="recs-list" id="live-result-recs"></div></div>
+            </div>
+            <div class="card" style="margin-top:12px;">
+              <div class="card-header">
+                <h3>Transcript</h3>
+                <span id="live-result-lang-badge"></span>
+              </div>
+              <div class="card-body">
+                <div class="transcript-box" id="live-result-transcript"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-20">
+          <div class="card-header"><h3>Previous Live Sessions</h3></div>
+          <div id="live-sessions-history"></div>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section class="content-section" id="section-history">
+        <p class="section-subtitle">All analyzed conversations</p>
+        <div class="card">
+          <div class="card-header"><h3>Conversation History</h3></div>
+          <div id="history-content"></div>
+        </div>
+      </section>
+
+      <!-- TRENDS -->
+      <section class="content-section" id="section-trends">
+        <p class="section-subtitle">Score progression over time</p>
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="stat-card">
+            <div class="stat-icon green"><i data-lucide="bar-chart-2"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Average Score</div>
+              <div class="stat-value" id="trends-avg">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Total Analyzed</div>
+              <div class="stat-value" id="trends-count">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Score Timeline</h3></div>
+          <div id="trends-content"></div>
+        </div>
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section class="content-section" id="section-recommendations">
+        <p class="section-subtitle">Coaching areas identified across your conversation history</p>
+        <div class="card">
+          <div class="card-header"><h3>Development Areas</h3></div>
+          <div class="card-body" id="recs-content"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="employee.js"></script>
+</body>
+</html>
