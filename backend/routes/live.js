@@ -12,6 +12,7 @@ import {
   completeLiveSession,
   getActiveSessions,
   getRecentLiveSessions,
+  getRecentActivity,
   getEmployeeLiveSessions,
   getLiveSessionStats,
   saveConversation,
@@ -148,13 +149,27 @@ router.get("/active", requireManager, (req, res) => {
     res.status(500).json({ error: "Failed to fetch active sessions." });
   }
 });
-
-// ── GET /api/live/recent — manager only ──────────────────────────────────────
 router.get("/recent", requireManager, (req, res) => {
   try {
-    res.status(200).json({ sessions: getRecentLiveSessions() });
+    const limit = Math.min(parseInt(req.query.limit, 10) || 30, 5000);
+    res.status(200).json({ sessions: getRecentLiveSessions(limit) });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch recent sessions." });
+  }
+});
+
+// ── GET /api/live/recent-activity — manager only ─────────────────────────────
+// Chain-wide feed: live-recorded sessions AND uploaded-audio conversations,
+// merged and sorted by date. Used by the manager search so date queries like
+// "18" or "19" find every conversation spoken that day, not just ones
+// recorded through the live mic flow.
+router.get("/recent-activity", requireManager, (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 30, 5000);
+    res.status(200).json({ sessions: getRecentActivity(limit) });
+  } catch (err) {
+    console.error("Recent activity error:", err.message);
+    res.status(500).json({ error: "Failed to fetch recent activity." });
   }
 });
 

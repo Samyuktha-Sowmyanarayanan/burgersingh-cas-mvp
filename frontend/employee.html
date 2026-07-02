@@ -3,272 +3,414 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Burger Singh — Employee</title>
+  <title>Burger Joint— Employee Portal</title>
   <link rel="icon" type="image/png" href="logo.png"/>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── Interconnectivity: clickable history rows ─────────────── */
+    .row-clickable { cursor: pointer; transition: background var(--t); }
+    .row-clickable:hover td { background: var(--brand-lt) !important; }
+
+    /* ── Conversation detail modal ──────────────────────────────── */
+    .convo-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 11, 0.55);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 20px;
+      overflow-y: auto;
+    }
+    .convo-modal-overlay.hidden { display: none; }
+
+    .convo-modal {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 720px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      overflow: hidden;
+      animation: convo-modal-in 0.15s ease;
+    }
+    @keyframes convo-modal-in {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .convo-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      z-index: 1;
+    }
+    .convo-modal-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--black);
+    }
+    .convo-modal-meta {
+      font-size: 11.5px;
+      color: var(--gray-400);
+      margin-top: 3px;
+    }
+    .convo-modal-close {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--r-sm);
+      color: var(--gray-400);
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all var(--t);
+    }
+    .convo-modal-close:hover { background: var(--gray-100); color: var(--black); }
+    .convo-modal-close svg.lucide { width: 16px; height: 16px; }
+
+    .convo-modal-body {
+      padding: 20px;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-<div class="app-layout">
 
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <img src="logo.png" alt="" class="sidebar-logo-img"/>
-      <div class="sidebar-brand-text">
-        <div class="sidebar-brand-name">Burger Singh</div>
-        <div class="sidebar-brand-sub">Employee Portal</div>
+<!-- TOP NAVIGATION — fixed, items pushed to the right via margin-left:auto -->
+<nav class="app-topnav">
+
+  <!-- Left: brand (logo + name) -->
+  <div class="topnav-brand">
+    <img src="logo.png" class="topnav-logo" alt=""/>
+    <span class="topnav-brand-name">Burger Joint</span>
+  </div>
+
+  <!-- Right: all controls -->
+  <div class="topnav-right" style="margin-left:auto;display:flex;align-items:center;gap:16px;padding:0 18px;">
+
+    <div class="search-wrap">
+      <i data-lucide="search" style="width:13px;height:13px;color:var(--gray-400);flex-shrink:0;"></i>
+      <input type="text" id="topnav-search" placeholder="Search sessions..."/>
+    <div id="search-dropdown" class="search-dropdown hidden"></div>
+    </div>
+    <!-- Quick Analysis — routes to Audio Analysis section -->
+    <button class="btn-quick-analysis" id="topnav-quick-btn">
+      <i data-lucide="zap"></i><span>Quick Analysis</span>
+    </button>
+
+    <!-- Notification bell — triggers dropdown -->
+    <div class="notif-wrapper" style="position:relative;">
+      <button class="notification-btn" id="notification-btn" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+        <span class="notif-dot" id="notif-dot"></span>
+      </button>
+
+      <!-- Notification dropdown panel -->
+      <div class="notif-dropdown hidden" id="notif-dropdown">
+        <div class="notif-panel-header">
+          <span>Notifications</span>
+          <button class="notif-mark-read" id="notif-mark-read">Mark all read</button>
+        </div>
+        <div class="notif-item unread">
+          <div class="notif-item-icon" style="background:#EFF6FF;color:#2563EB;"><i data-lucide="trending-up"></i></div>
+          <div class="notif-item-body">
+            <div class="notif-item-title">Performance updated</div>
+            <div class="notif-item-sub">Your metrics have been recalculated</div>
+          </div>
+          <div class="notif-item-time">Just now</div>
+        </div>
+        <div class="notif-item unread">
+          <div class="notif-item-icon" style="background:var(--success-bg);color:var(--success);"><i data-lucide="check-circle"></i></div>
+          <div class="notif-item-body">
+            <div class="notif-item-title">Analysis complete</div>
+            <div class="notif-item-sub">Your last session has been scored</div>
+          </div>
+          <div class="notif-item-time">2m ago</div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-icon" style="background:var(--warning-bg);color:var(--warning);"><i data-lucide="lightbulb"></i></div>
+          <div class="notif-item-body">
+            <div class="notif-item-title">New recommendation</div>
+            <div class="notif-item-sub">Focus on upselling in your next session</div>
+          </div>
+          <div class="notif-item-time">1h ago</div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-icon" style="background:#F5F3FF;color:#7C3AED;"><i data-lucide="award"></i></div>
+          <div class="notif-item-body">
+            <div class="notif-item-title">Weekly summary ready</div>
+            <div class="notif-item-sub">Check your performance report</div>
+          </div>
+          <div class="notif-item-time">Yesterday</div>
+        </div>
+        <div class="notif-panel-footer" onclick="activateSection('intelligence')">
+          View all in Intelligence →
+        </div>
       </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="sidebar-section-label">Workspace</div>
-      <button class="nav-item active" data-section="overview">
-        <i data-lucide="layout-dashboard"></i><span>Overview</span>
-      </button>
-      <button class="nav-item" data-section="upload">
-        <i data-lucide="upload-cloud"></i><span>Upload Conversation</span>
-      </button>
-      <button class="nav-item" data-section="live">
-        <i data-lucide="radio"></i><span>Live Session</span>
-      </button>
+    <!-- User chip -->
+    <div class="topnav-user-chip">
+      <div class="user-avatar-chip" id="topnav-avatar">—</div>
+      <span class="topnav-user-name" id="topnav-name">—</span>
+    </div>
 
-      <div class="sidebar-section-label">My Performance</div>
-      <button class="nav-item" data-section="history">
-        <i data-lucide="clock"></i><span>History</span>
+  </div>
+</nav>
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar">
+    <nav class="sidebar-nav">
+      <div class="sb-section-label">Workspace</div>
+      <button class="nav-item active" data-section="dashboard">
+        <i data-lucide="layout-dashboard"></i><span>Workspace</span>
       </button>
-      <button class="nav-item" data-section="trends">
-        <i data-lucide="trending-up"></i><span>Trends</span>
+      <button class="nav-item" data-section="audio-analysis">
+        <i data-lucide="upload-cloud"></i><span>Audio Analysis</span>
       </button>
-      <button class="nav-item" data-section="recommendations">
-        <i data-lucide="lightbulb"></i><span>Recommendations</span>
+      <button class="nav-item" data-section="live-sessions">
+        <i data-lucide="radio"></i><span>Live Sessions</span>
+      </button>
+      <div class="sb-section-label">Insights</div>
+      <button class="nav-item" data-section="performance">
+        <i data-lucide="trending-up"></i><span>Performance</span>
+      </button>
+      <button class="nav-item" data-section="intelligence">
+        <i data-lucide="sparkles"></i><span>Intelligence</span>
       </button>
     </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-avatar" id="user-avatar">—</div>
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="help-btn" style="color:var(--sb-text);">
+        <i data-lucide="help-circle"></i><span>Help Center</span>
+      </button>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="user-avatar">—</div>
         <div style="min-width:0;">
-          <div class="user-name-text" id="user-name">Loading...</div>
-          <div class="user-role-text">Employee</div>
+          <div class="sidebar-uname" id="user-name">Loading...</div>
+          <div class="sidebar-urole">Employee</div>
         </div>
       </div>
-      <button class="btn-logout" id="logout-btn">
-        <i data-lucide="log-out"></i>Sign Out
+      <button class="btn-signout" id="logout-btn">
+        <i data-lucide="log-out"></i>Log Out
       </button>
     </div>
   </aside>
 
-  <div class="main-wrapper">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title" id="page-title">Overview</div>
-        <div class="topbar-breadcrumb">Burger Singh CAS</div>
-      </div>
-      <div class="topbar-right">
-        <button class="topbar-btn" title="Notifications"><i data-lucide="bell"></i></button>
-        <div class="topbar-badge">
-          <i data-lucide="user"></i>
-          <span id="topbar-user-id">—</span>
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+
+    <!-- ══ DASHBOARD ══ -->
+    <section class="content-section active" id="section-dashboard">
+
+      <!-- Hero greeting — Quick Analysis button REMOVED from here (was the circled one) -->
+      <div class="hero-section">
+        <div>
+          <h1 class="hero-greeting" id="hero-greeting">Good morning, ...</h1>
+          <p class="hero-subtitle" id="hero-subtitle"></p>
         </div>
       </div>
-    </header>
 
-    <main class="content">
-
-      <!-- OVERVIEW -->
-      <section class="content-section active" id="section-overview">
-        <p class="section-subtitle">Your performance at a glance</p>
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
-            <div class="stat-info">
-              <div class="stat-label">Total Conversations</div>
-              <div class="stat-value" id="stat-total">—</div>
-            </div>
+      <!-- Stat strip -->
+      <div class="stat-strip">
+        <div class="stat-item stat-brand">
+          <div class="stat-item-top">
+            <div class="stat-label">Avg Score</div>
+            <div class="stat-item-icon"><i data-lucide="target"></i></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon red"><i data-lucide="bar-chart-2"></i></div>
-            <div class="stat-info">
-              <div class="stat-label">Average Score</div>
-              <div class="stat-value" id="stat-avg">—</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon green"><i data-lucide="trending-up"></i></div>
-            <div class="stat-info">
-              <div class="stat-label">Last Score</div>
-              <div class="stat-value" id="stat-last">—</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon orange"><i data-lucide="calendar"></i></div>
-            <div class="stat-info">
-              <div class="stat-label">This Week</div>
-              <div class="stat-value" id="stat-week">—</div>
-            </div>
-          </div>
+          <div class="stat-value" id="strip-avg">—</div>
+          <div class="stat-sub">out of 100</div>
         </div>
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><h3>Recent Conversations</h3></div>
-            <div id="overview-recent"></div>
+        <div class="stat-item stat-info">
+          <div class="stat-item-top">
+            <div class="stat-label">Conversations</div>
+            <div class="stat-item-icon"><i data-lucide="message-square"></i></div>
           </div>
-          <div class="card">
-            <div class="card-header"><h3>Latest Recommendations</h3></div>
-            <div class="card-body" id="overview-recs"></div>
-          </div>
+          <div class="stat-value" id="strip-total">—</div>
+          <div class="stat-sub">total analyzed</div>
         </div>
-      </section>
-
-      <!-- UPLOAD -->
-      <section class="content-section" id="section-upload">
-        <p class="section-subtitle">Upload a recorded customer conversation for AI analysis</p>
-        <div class="grid-2" style="align-items:start;">
-          <div class="card">
-            <div class="card-header"><h3>Upload Audio File</h3></div>
-            <div class="card-body">
-              <input type="file" id="audio-input" accept="audio/*"
-                style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"/>
-              <div class="upload-zone" id="upload-zone">
-                <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
-                <div class="upload-label" id="upload-label-text">Click to choose an audio file</div>
-                <div class="upload-sub">Supports .mp3, .wav, .m4a &nbsp;&middot;&nbsp; Max 25 MB</div>
-              </div>
-              <div id="upload-feedback"></div>
-              <button class="btn btn-primary btn-full" id="analyze-btn" style="margin-top:12px;">
-                Analyze Conversation
-              </button>
-            </div>
+        <div class="stat-item stat-success">
+          <div class="stat-item-top">
+            <div class="stat-label">Active Sessions</div>
+            <div class="stat-item-icon"><i data-lucide="activity"></i></div>
           </div>
-          <div id="result-container" class="hidden">
-            <div id="scorecard-wrap"></div>
-            <div class="card" style="margin-top:12px;">
-              <div class="card-header"><h3>Recommendations</h3></div>
-              <div class="card-body"><div class="recs-list" id="result-recs"></div></div>
-            </div>
-            <div class="card" style="margin-top:12px;">
-              <div class="card-header">
-                <h3>Transcript</h3>
-                <span id="result-lang-badge"></span>
-              </div>
-              <div class="card-body">
-                <div class="transcript-box" id="result-transcript"></div>
-              </div>
-            </div>
-          </div>
+          <div class="stat-value" id="strip-week">—</div>
+          <div class="stat-sub">this week</div>
         </div>
-      </section>
+        <div class="stat-item stat-warning">
+          <div class="stat-item-top">
+            <div class="stat-label">Action Items</div>
+            <div class="stat-item-icon"><i data-lucide="list-checks"></i></div>
+          </div>
+          <div class="stat-value" id="strip-actions">—</div>
+          <div class="stat-sub">recommendations</div>
+        </div>
+      </div>
 
-      <!-- LIVE SESSION -->
-      <section class="content-section" id="section-live">
-        <p class="section-subtitle">Record a live customer conversation and receive instant AI analysis</p>
-        <div class="grid-2" style="align-items:start;">
-          <div>
-            <div class="live-session-card" id="live-session-card">
-              <div class="live-session-header">
-                <div class="live-status-row">
-                  <div class="rec-dot" id="rec-dot"></div>
-                  <span class="live-status-label" id="live-status-label">Ready to Record</span>
-                </div>
-                <div class="live-timer" id="live-timer">00:00</div>
-              </div>
-              <div class="waveform" id="waveform">
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-                <div class="waveform-bar" style="height:3px;"></div>
-              </div>
-              <div class="duration-warning hidden" id="duration-warning">
-                <i data-lucide="alert-triangle"></i>
-                Session is very short. Recommend at least 15 seconds for accurate analysis.
-              </div>
-              <div class="session-meta hidden" id="session-meta">
-                <div class="session-meta-chip">
-                  <i data-lucide="hash"></i>
-                  <span id="chip-session-id">—</span>
-                </div>
-                <div class="session-meta-chip">
-                  <i data-lucide="user"></i>
-                  <span id="chip-employee"></span>
-                </div>
-                <div class="session-meta-chip">
-                  <i data-lucide="building-2"></i>
-                  <span id="chip-branch">—</span>
-                </div>
-              </div>
-              <div class="live-controls">
-                <button class="btn btn-primary" id="btn-start-recording">
-                  <i data-lucide="mic"></i>Start Recording
-                </button>
-                <button class="btn btn-secondary hidden" id="btn-pause-recording">
-                  <i data-lucide="pause"></i>Pause
-                </button>
-                <button class="btn btn-secondary hidden" id="btn-resume-recording">
-                  <i data-lucide="play"></i>Resume
-                </button>
-                <button class="btn btn-danger hidden" id="btn-stop-recording">
-                  <i data-lucide="square"></i>Stop &amp; Analyze
-                </button>
-                <button class="btn btn-ghost hidden" id="btn-cancel-recording">Cancel</button>
-              </div>
+      <!-- 2-col content -->
+      <div class="content-2col">
+        <div class="col-main">
+          <div class="action-cards">
+            <div class="action-card action-card-light" id="card-upload">
+              <div class="action-card-icon"><i data-lucide="upload-cloud"></i></div>
+              <div class="action-card-title">Upload Audio</div>
+              <div class="action-card-desc">Bulk process MP3/WAV records for AI analysis</div>
             </div>
-            <div id="live-feedback"></div>
+            <div class="action-card action-card-dark" id="card-live">
+              <div class="action-card-icon"><i data-lucide="radio"></i></div>
+              <div class="action-card-title">Join Live Session</div>
+              <div class="action-card-desc">Real-time coaching and sentiment tracking</div>
+            </div>
           </div>
 
-          <div id="live-result-container" class="hidden">
-            <div id="live-scorecard-wrap"></div>
-            <div class="card" style="margin-top:12px;">
-              <div class="card-header"><h3>Recommendations</h3></div>
-              <div class="card-body"><div class="recs-list" id="live-result-recs"></div></div>
-            </div>
-            <div class="card" style="margin-top:12px;">
-              <div class="card-header">
-                <h3>Transcript</h3>
-                <span id="live-result-lang-badge"></span>
-              </div>
-              <div class="card-body">
-                <div class="transcript-box" id="live-result-transcript"></div>
-              </div>
-            </div>
+          <div class="sec-heading">
+            <span>Recent Analysis History</span>
+            <a id="view-all-link">View All</a>
           </div>
+          <div id="dashboard-recent"></div>
         </div>
 
-        <div class="card mt-20">
+        <div class="col-side">
+          <div class="col-side-heading">Performance Trend</div>
+          <div class="trend-bars" id="trend-bars"></div>
+          <div class="trend-x-labels" id="trend-x-labels"></div>
+          <div class="col-side-heading">AI Recommendations</div>
+          <div id="dashboard-recs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ AUDIO ANALYSIS ══ -->
+    <section class="content-section" id="section-audio-analysis">
+      <div class="page-header">
+        <div class="page-title">Audio Analysis</div>
+        <div class="page-subtitle">Upload a recorded conversation for AI-powered evaluation</div>
+      </div>
+      <div style="padding:22px 32px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+        <div class="card">
+          <div class="card-header"><h3>Upload Audio File</h3></div>
+          <div class="card-body">
+            <input type="file" id="audio-input" accept="audio/*"
+              style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;"/>
+            <div class="upload-zone" id="upload-zone">
+              <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
+              <div class="upload-label" id="upload-label-text">Click to choose an audio file</div>
+              <div class="upload-sub">Supports .mp3, .wav, .m4a &nbsp;&middot;&nbsp; Max 25 MB</div>
+            </div>
+            <div id="upload-feedback"></div>
+            <button class="btn btn-primary btn-full" id="analyze-btn" style="margin-top:12px;">Analyze Conversation</button>
+          </div>
+        </div>
+        <div id="result-container" class="hidden">
+          <div id="scorecard-wrap"></div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-header"><h3>Recommendations</h3></div>
+            <div class="card-body" id="result-recs"></div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-header"><h3>Transcript</h3><span id="result-lang-badge"></span></div>
+            <div class="card-body"><div class="transcript-box" id="result-transcript"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ LIVE SESSIONS ══ -->
+    <section class="content-section" id="section-live-sessions">
+      <div class="page-header">
+        <div class="page-title">Live Session</div>
+        <div class="page-subtitle">Record a live customer conversation and receive instant AI analysis</div>
+      </div>
+      <div style="padding:22px 32px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+        <div>
+          <div class="live-session-card">
+            <div class="live-session-header">
+              <div class="live-status-row">
+                <div class="rec-dot" id="rec-dot"></div>
+                <span class="live-status-label" id="live-status-label">Ready to Record</span>
+              </div>
+              <div class="live-timer" id="live-timer">00:00</div>
+            </div>
+            <div class="waveform" id="waveform">
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+              <div class="waveform-bar" style="height:3px;"></div><div class="waveform-bar" style="height:3px;"></div>
+            </div>
+            <div class="duration-warning hidden" id="duration-warning">
+              <i data-lucide="alert-triangle"></i>Session is very short — recommend at least 15 seconds.
+            </div>
+            <div class="session-meta hidden" id="session-meta">
+              <div class="session-meta-chip"><i data-lucide="hash"></i><span id="chip-session-id">—</span></div>
+              <div class="session-meta-chip"><i data-lucide="user"></i><span id="chip-employee">—</span></div>
+            </div>
+            <div class="live-controls">
+              <button class="btn btn-primary" id="btn-start-recording"><i data-lucide="mic"></i>Start Recording</button>
+              <button class="btn btn-secondary hidden" id="btn-pause-recording"><i data-lucide="pause"></i>Pause</button>
+              <button class="btn btn-secondary hidden" id="btn-resume-recording"><i data-lucide="play"></i>Resume</button>
+              <button class="btn btn-danger hidden" id="btn-stop-recording"><i data-lucide="square"></i>Stop &amp; Analyze</button>
+              <button class="btn btn-ghost hidden" id="btn-cancel-recording">Cancel</button>
+            </div>
+          </div>
+          <div id="live-feedback"></div>
+        </div>
+        <div id="live-result-container" class="hidden">
+          <div id="live-scorecard-wrap"></div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-header"><h3>Recommendations</h3></div>
+            <div class="card-body" id="live-result-recs"></div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-header"><h3>Transcript</h3><span id="live-result-lang-badge"></span></div>
+            <div class="card-body"><div class="transcript-box" id="live-result-transcript"></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 32px 22px;">
+        <div class="card">
           <div class="card-header"><h3>Previous Live Sessions</h3></div>
           <div id="live-sessions-history"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- HISTORY -->
-      <section class="content-section" id="section-history">
-        <p class="section-subtitle">All analyzed conversations</p>
+    <!-- ══ PERFORMANCE ══ -->
+    <section class="content-section" id="section-performance">
+      <div class="page-header">
+        <div class="page-title">Performance</div>
+        <div class="page-subtitle">Your conversation history and score trends</div>
+      </div>
+      <div class="inner-tabs">
+        <button class="inner-tab active" data-subtab="perf-history">History</button>
+        <button class="inner-tab" data-subtab="perf-trends">Trends</button>
+      </div>
+      <div class="inner-panel active" id="perf-history">
         <div class="card">
           <div class="card-header"><h3>Conversation History</h3></div>
           <div id="history-content"></div>
         </div>
-      </section>
-
-      <!-- TRENDS -->
-      <section class="content-section" id="section-trends">
-        <p class="section-subtitle">Score progression over time</p>
-        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="stat-card">
-            <div class="stat-icon green"><i data-lucide="bar-chart-2"></i></div>
-            <div class="stat-info">
+      </div>
+      <div class="inner-panel" id="perf-trends">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
+          <div class="card">
+            <div class="card-body">
               <div class="stat-label">Average Score</div>
               <div class="stat-value" id="trends-avg">—</div>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
-            <div class="stat-info">
+          <div class="card">
+            <div class="card-body">
               <div class="stat-label">Total Analyzed</div>
               <div class="stat-value" id="trends-count">—</div>
             </div>
@@ -278,20 +420,44 @@
           <div class="card-header"><h3>Score Timeline</h3></div>
           <div id="trends-content"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- RECOMMENDATIONS -->
-      <section class="content-section" id="section-recommendations">
-        <p class="section-subtitle">Coaching areas identified across your conversation history</p>
+    <!-- ══ INTELLIGENCE ══ -->
+    <section class="content-section" id="section-intelligence">
+      <div class="page-header">
+        <div class="page-title">AI Intelligence</div>
+        <div class="page-subtitle">Personalized coaching derived from your conversation history</div>
+      </div>
+      <div style="padding:22px 32px;">
         <div class="card">
           <div class="card-header"><h3>Development Areas</h3></div>
           <div class="card-body" id="recs-content"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </main>
+  </main>
+</div>
+
+<!-- ══ CONVERSATION DETAIL MODAL — "interconnectivity" ══
+     Clicking any history row (Dashboard or Performance) opens this
+     with the full scorecard, recommendations, and transcript. -->
+<div class="convo-modal-overlay hidden" id="convo-modal-overlay">
+  <div class="convo-modal" role="dialog" aria-modal="true" aria-labelledby="convo-modal-title">
+    <div class="convo-modal-header">
+      <div>
+        <div class="convo-modal-title" id="convo-modal-title">Conversation Details</div>
+        <div class="convo-modal-meta" id="convo-modal-meta"></div>
+      </div>
+      <button class="convo-modal-close" id="convo-modal-close" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="convo-modal-body" id="convo-modal-body"></div>
   </div>
 </div>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="employee.js"></script>
 </body>

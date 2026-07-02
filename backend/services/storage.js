@@ -562,3 +562,49 @@ export function getLiveSessionStats() {
 
   return { activeCount, todayCount, activeBranches: branchRows };
 }
+export function getRecentActivity(limit = 30) {
+  return db.prepare(`
+    SELECT * FROM (
+      SELECT
+        ls.session_id       as sessionId,
+        ls.employee_id      as employeeId,
+        ls.employee_name    as employeeName,
+        ls.branch_id        as branchId,
+        ls.status           as status,
+        ls.started_at       as startedAt,
+        ls.ended_at         as endedAt,
+        ls.duration_seconds as durationSeconds,
+        ls.conversation_id  as conversationId,
+        b.name              as branchName,
+        b.region            as region,
+        c.overall_score     as overallScore
+      FROM live_sessions ls
+      LEFT JOIN branches b ON b.branch_id = ls.branch_id
+      LEFT JOIN conversations c ON c.id = ls.conversation_id
+
+      UNION ALL
+
+      SELECT
+        NULL                as sessionId,
+        c.employee_id       as employeeId,
+        e.name              as employeeName,
+        c.branch_id         as branchId,
+        'completed'         as status,
+        c.timestamp         as startedAt,
+        c.timestamp         as endedAt,
+        NULL                as durationSeconds,
+        c.id                as conversationId,
+        b.name              as branchName,
+        b.region            as region,
+        c.overall_score     as overallScore
+      FROM conversations c
+      LEFT JOIN branches b ON b.branch_id = c.branch_id
+      LEFT JOIN employees e ON e.employee_id = c.employee_id
+      WHERE c.id NOT IN (
+        SELECT conversation_id FROM live_sessions WHERE conversation_id IS NOT NULL
+      )
+    )
+    ORDER BY startedAt DESC
+    LIMIT ?
+  `).all(limit);
+}

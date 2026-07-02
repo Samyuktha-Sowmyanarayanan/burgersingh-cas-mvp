@@ -4,8 +4,16 @@ import { getDashboardSummary } from "../services/storage.js";
 const router = express.Router();
 
 function requireManager(req, res, next) {
-  if (!req.session.employeeId) return res.status(401).json({ error: "Not logged in." });
-  if (req.session.role !== "manager") return res.status(403).json({ error: "Access denied. Manager role required." });
+  if (!req.session.employeeId) {
+    return res.status(401).json({ error: "Not logged in." });
+  }
+  
+  // FIX: Safe case-insensitive conversion. Handles "Manager", "MANAGER", or "manager" cleanly.
+  const sessionRole = req.session.role?.toLowerCase();
+  if (sessionRole !== "manager") {
+    return res.status(403).json({ error: "Access denied. Manager role required." });
+  }
+  
   next();
 }
 
