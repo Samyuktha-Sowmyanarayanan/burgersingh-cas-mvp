@@ -17,6 +17,7 @@ import {
   getLiveSessionStats,
   saveConversation,
   getEmployeeBranchId,
+  getConversationById,
 } from "../services/storage.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -170,6 +171,17 @@ router.get("/recent-activity", requireManager, (req, res) => {
   } catch (err) {
     console.error("Recent activity error:", err.message);
     res.status(500).json({ error: "Failed to fetch recent activity." });
+  }
+});
+// GET /api/conversations/:id — full detail for one conversation (any employee)
+// Powers the manager dashboard's click-to-view-scorecard feature.
+router.get("/conversations/:id", (req, res) => {
+  try {
+    const convo = getConversationById(Number(req.params.id));
+    if (!convo) return res.status(404).json({ error: "Conversation not found." });
+    res.json(convo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

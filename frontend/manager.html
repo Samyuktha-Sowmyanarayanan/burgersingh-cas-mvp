@@ -6,6 +6,81 @@
   <title>Burger Joint — Operations Intelligence</title>
   <link rel="icon" type="image/png" href="logo.png"/>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── Interconnectivity: clickable Recent Sessions rows ─────── */
+    .row-clickable { cursor: pointer; transition: background var(--t); }
+    .row-clickable:hover td { background: var(--brand-lt) !important; }
+
+    /* ── Conversation detail modal ──────────────────────────────── */
+    .convo-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 11, 0.55);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 20px;
+      overflow-y: auto;
+    }
+    .convo-modal-overlay.hidden { display: none; }
+
+    .convo-modal {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 720px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      overflow: hidden;
+      animation: convo-modal-in 0.15s ease;
+    }
+    @keyframes convo-modal-in {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .convo-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      z-index: 1;
+    }
+    .convo-modal-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--black);
+    }
+    .convo-modal-meta {
+      font-size: 11.5px;
+      color: var(--gray-400);
+      margin-top: 3px;
+    }
+    .convo-modal-close {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--r-sm);
+      color: var(--gray-400);
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all var(--t);
+    }
+    .convo-modal-close:hover { background: var(--gray-100); color: var(--black); }
+    .convo-modal-close svg.lucide { width: 16px; height: 16px; }
+
+    .convo-modal-body {
+      padding: 20px;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
 
@@ -443,6 +518,25 @@
     </section>
 
   </main>
+</div>
+
+<!-- ══ CONVERSATION DETAIL MODAL — "interconnectivity" ══
+     Clicking a row in Recent Sessions (including date-search results)
+     opens this with the full scorecard, recommendations, and transcript
+     — fetched on demand from GET /api/conversations/:id. -->
+<div class="convo-modal-overlay hidden" id="convo-modal-overlay">
+  <div class="convo-modal" role="dialog" aria-modal="true" aria-labelledby="convo-modal-title">
+    <div class="convo-modal-header">
+      <div>
+        <div class="convo-modal-title" id="convo-modal-title">Conversation Details</div>
+        <div class="convo-modal-meta" id="convo-modal-meta"></div>
+      </div>
+      <button class="convo-modal-close" id="convo-modal-close" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="convo-modal-body" id="convo-modal-body"></div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>

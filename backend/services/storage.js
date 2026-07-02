@@ -111,7 +111,10 @@ export function getEmployeeHistory(employeeId) {
   return db.prepare("SELECT * FROM conversations WHERE employee_id = ? ORDER BY timestamp DESC")
     .all(employeeId).map(formatRow);
 }
-
+export function getConversationById(id) {
+  const row = db.prepare("SELECT * FROM conversations WHERE id = ?").get(id);
+  return row ? formatRow(row) : null;
+}
 export function getEmployeeTrends(employeeId) {
   return db.prepare("SELECT timestamp, overall_score FROM conversations WHERE employee_id = ? ORDER BY timestamp ASC")
     .all(employeeId).map((r) => ({ timestamp: r.timestamp, overallScore: r.overall_score }));

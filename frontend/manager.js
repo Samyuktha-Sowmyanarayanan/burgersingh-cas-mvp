@@ -1,6 +1,7 @@
 // ── Auth & Init ──────────────────────────────────────────────────────────────
 let session = null, allBranches = [], allRegions = [], currentRegion = null;
 let mgrDateFilter = null; // active date search query, applied in Live Operations > Recent Sessions
+const convoDetailCache = new Map(); // cache of full conversation details fetched by id (manager view spans all employees, so we fetch on demand rather than bulk-loading transcripts)
 
 async function init() {
   try {
@@ -16,6 +17,7 @@ async function init() {
     ri();
     await loadStaticData();
     setupNav();
+    setupConvoModal();
     loadMgrDashboard();
   } catch { redirect("/login.html"); }
 }
@@ -172,6 +174,12 @@ function langTag(lang) {
   const map = { English: "en", Hindi: "hi", Bengali: "bn", Assamese: "as", Nepali: "ne", Mixed: "mixed" };
   return lang ? `<span class="lang-tag lang-${map[lang] || "mixed"}">${lang}</span>` : "";
 }
+function yesNo(v) {
+  return v
+    ? `<span style="color:var(--success);font-weight:700;">Yes</span>`
+    : `<span style="color:var(--danger);font-weight:700;">No</span>`;
+}
+function fmtComplaint(v) { return !v || v === "N/A" ? "N/A" : `${v}/10`; }
 function fmtDate(ts) { return new Date(ts).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }); }
 function fmtDur(s)   { return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`; }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : "—"; }
@@ -179,6 +187,9 @@ function loading(m = "Loading...") { return `<div class="spinner-wrap"><div clas
 function empty(m = "No data.") { return `<div class="empty-state"><i data-lucide="inbox"></i><p>${m}</p></div>`; }
 function miniTable(rows) {
   return rows.map(([l, v]) => `<div class="mini-table-row"><span class="mini-table-label">${l}</span><span class="mini-table-value">${v}</span></div>`).join("");
+}
+function escapeAttr(str) {
+  return String(str ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
 // ── Date search helpers ───────────────────────────────────────────────────────
@@ -240,6 +251,122 @@ function matchesDateQuery(timestamp, query) {
   }
   // Fallback for text that isn't a date at all (weekday names, "am"/"pm", etc.)
   return fmtDate(timestamp).toLowerCase().includes(q.toLowerCase());
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONVERSATION DETAIL MODAL — "interconnectivity"
+// Clicking any Recent Sessions row (including filtered date-search
+// results) opens the full record: complete transcript, full
+// scorecard, and recommendations — same UI as the employee dashboard.
+//
+// Unlike the employee dashboard (which already has full transcripts
+// cached client-side per employee), the manager view spans every
+// employee across every branch, so we fetch conversation detail on
+// demand from GET /api/conversations/:id and cache it by id.
+// ═══════════════════════════════════════════════════════════
+function setupConvoModal() {
+  const overlay = document.getElementById("convo-modal-overlay");
+  const closeBtn = document.getElementById("convo-modal-close");
+  if (!overlay) return;
+
+  closeBtn?.addEventListener("click", closeConvoDetail);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeConvoDetail();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !overlay.classList.contains("hidden")) closeConvoDetail();
+  });
+}
+
+async function openConvoDetail(id, rowMeta = {}) {
+  const overlay = document.getElementById("convo-modal-overlay");
+  if (!overlay || !id) return;
+
+  document.getElementById("convo-modal-title").textContent = `Conversation #${id}`;
+  document.getElementById("convo-modal-meta").innerHTML =
+    [rowMeta.employeeName, rowMeta.branchName].filter(Boolean).join(" &nbsp;&middot;&nbsp; ");
+  document.getElementById("convo-modal-body").innerHTML = loading("Loading conversation...");
+  overlay.classList.remove("hidden");
+  ri();
+
+  try {
+    let c = convoDetailCache.get(id);
+    if (!c) {
+      const res = await fetch(`/api/live/conversations/${id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load this conversation.");
+      c = data;
+      convoDetailCache.set(id, c);
+    }
+
+    const ev = c.evaluation || {};
+    const sc = scoreClass(ev.overallScore);
+
+    document.getElementById("convo-modal-title").textContent = `Conversation #${c.id}`;
+    document.getElementById("convo-modal-meta").innerHTML =
+      `${fmtDate(c.timestamp)} &nbsp;&middot;&nbsp; ${langTag(c.detectedLanguage)} &nbsp;&middot;&nbsp; Employee ${c.employeeId || rowMeta.employeeName || "—"}${rowMeta.branchName ? ` &nbsp;&middot;&nbsp; ${rowMeta.branchName}` : ""}`;
+
+    document.getElementById("convo-modal-body").innerHTML = `
+      ${buildScorecard({
+        title: "Conversation Scorecard",
+        meta: `ID #${c.id} &nbsp;&middot;&nbsp; ${langTag(c.detectedLanguage)}`,
+        score: ev.overallScore, sc, ev,
+      })}
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header"><h3>Recommendations</h3></div>
+        <div class="card-body">
+          ${(ev.recommendations || []).map((r) =>
+            `<div class="rec-item"><span class="rec-icon"><i data-lucide="lightbulb"></i></span>${r}</div>`
+          ).join("") || `<p class="text-muted text-sm">No specific recommendations.</p>`}
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header"><h3>Full Transcript</h3><span>${langTag(c.detectedLanguage)}</span></div>
+        <div class="card-body"><div class="transcript-box">${c.transcript || "—"}</div></div>
+      </div>
+      ${c.englishTranscript && c.detectedLanguage !== "English" ? `
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header"><h3>English Translation</h3></div>
+        <div class="card-body"><div class="transcript-box">${c.englishTranscript}</div></div>
+      </div>` : ""}
+    `;
+    ri();
+  } catch (err) {
+    document.getElementById("convo-modal-body").innerHTML = `<div class="form-error">${err.message}</div>`;
+  }
+}
+
+function closeConvoDetail() {
+  document.getElementById("convo-modal-overlay")?.classList.add("hidden");
+}
+
+function buildScorecard({ title, meta, score, sc, ev }) {
+  return `
+    <div class="scorecard-wrap">
+      <div class="scorecard-head">
+        <div>
+          <div class="scorecard-title">${title}</div>
+          <div class="scorecard-meta">${meta}</div>
+        </div>
+        <div class="scorecard-score-badge ${sc}">
+          <span class="scorecard-num">${score}</span>
+          <span class="scorecard-den">/100</span>
+        </div>
+      </div>
+      <div class="scorecard-metrics">
+        ${mc("Greeting",       yesNo(ev.greeting))}
+        ${mc("Politeness",     `${ev.politeness}/10`)}
+        ${mc("Engagement",     `${ev.customerEngagement}/10`)}
+        ${mc("Upselling",      `${ev.upselling}/10`)}
+        ${mc("Combo",          yesNo(ev.comboRecommendation))}
+        ${mc("Discount",       yesNo(ev.discountMentioned))}
+        ${mc("Complaint",      fmtComplaint(ev.complaintHandling))}
+        ${mc("Professionalism",`${ev.professionalism}/10`)}
+      </div>
+    </div>`;
+}
+function mc(label, value) {
+  return `<div class="sc-metric"><div class="sc-metric-label">${label}</div><div class="sc-metric-value">${value}</div></div>`;
 }
 
 // ── Manager Dashboard ─────────────────────────────────────────────────────────
@@ -715,9 +842,15 @@ async function loadRecentLiveSessions() {
       });
       return;
     }
+
+    // Rows with a linked conversation (conversationId) are clickable and open
+    // the full scorecard/transcript modal — this is the "interconnectivity"
+    // piece: click a search result, land straight on its full record.
     el.innerHTML = filterBanner + `<table class="data-table">
       <thead><tr><th>Employee</th><th>Branch</th><th>Region</th><th>Date &amp; Time</th><th>Duration</th><th>Score</th><th>Status</th></tr></thead>
-      <tbody>${sessions.map((s) => `<tr>
+      <tbody>${sessions.map((s) => `<tr
+          class="${s.conversationId ? "row-clickable" : ""}"
+          ${s.conversationId ? `data-convo-id="${s.conversationId}" data-employee="${escapeAttr(s.employeeName || s.employeeId || "")}" data-branch="${escapeAttr(s.branchName || "")}" title="Click to view full conversation"` : ""}>
         <td style="font-weight:600;">${s.employeeName || s.employeeId}</td>
         <td style="color:var(--gray-600);">${s.branchName || "—"}</td>
         <td style="color:var(--gray-600);">${s.region || "—"}</td>
@@ -727,6 +860,16 @@ async function loadRecentLiveSessions() {
         <td><span class="session-status-pill ${s.status}">${capitalize(s.status)}</span></td>
       </tr>`).join("")}</tbody>
     </table>`; ri();
+
+    el.querySelectorAll("tr[data-convo-id]").forEach((row) => {
+      row.addEventListener("click", () => {
+        openConvoDetail(Number(row.dataset.convoId), {
+          employeeName: row.dataset.employee,
+          branchName: row.dataset.branch,
+        });
+      });
+    });
+
     document.getElementById("clear-live-date-filter")?.addEventListener("click", () => {
       mgrDateFilter = null; loadRecentLiveSessions();
     });
